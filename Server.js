@@ -75,21 +75,24 @@ app.get("/paises/buscar", async (req, res) => {
 app.post("/paises/avaliar", async (req, res) => {
   const { pais, voto } = req.body;
 
-    await db.query(
-      `INSERT INTO paises_curtidas (paises, curtidas, n_curtidas) 
-       VALUES (?, 0, 0) 
-       ON DUPLICATE KEY UPDATE paises = paises`,
-      [pais]
-    );
+    const [valida] = await db.query("SELECT 1 FROM paises_curtidas WHERE paises = ?", [pais]);
 
-    await db.query(
-      `UPDATE paises_curtidas 
-       SET curtidas = curtidas + ?, 
-           n_curtidas = n_curtidas + ? 
-       WHERE paises = ?`,
-      [voto === "curti" ? 1 : 0, voto === "nao_curti" ? 1 : 0, pais]
+    if(valida[0] == null){
+        await db.query(
+        `INSERT INTO paises_curtidas (paises, curtidas, n_curtidas) 
+        VALUES (?, ?, ?) 
+        ON DUPLICATE KEY UPDATE paises = paises`,
+        [pais, voto == "curti" ? 1 : 0, voto == "nao_curti" ? 1 : 0, pais]
     );
-
+    }else{
+        await db.query(
+        `UPDATE paises_curtidas 
+        SET curtidas = curtidas + ?, 
+            n_curtidas = n_curtidas + ? 
+        WHERE paises = ?`,
+        [voto == "curti" ? 1 : 0, voto == "nao_curti" ? 1 : 0, pais]
+        );
+    }
     const [updated] = await db.query("SELECT curtidas, n_curtidas FROM paises_curtidas WHERE paises = ?", [pais]);
 
     res.json({ sucesso: true, pais, avaliacao: updated[0] });
