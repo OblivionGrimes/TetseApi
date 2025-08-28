@@ -74,37 +74,42 @@ app.get("/paises/buscar", async (req, res) => {
 
 app.post("/paises/avaliar", async (req, res) => {
   const { pais, voto } = req.body;
+    try {
+        const [valida] = await db.query("SELECT 1 FROM paises_curtidas WHERE paises = ?", [pais]);
 
-    const [valida] = await db.query("SELECT 1 FROM paises_curtidas WHERE paises = ?", [pais]);
-
-    if(valida[0] == null){
-        await db.query(
-        `INSERT INTO paises_curtidas (paises, curtidas, n_curtidas) 
-        VALUES (?, ?, ?) 
-        ON DUPLICATE KEY UPDATE paises = paises`,
-        [pais, voto == "curti" ? 1 : 0, voto == "nao_curti" ? 1 : 0, pais]
-    );
-    }else{
-        await db.query(
-        `UPDATE paises_curtidas 
-        SET curtidas = curtidas + ?, 
-            n_curtidas = n_curtidas + ? 
-        WHERE paises = ?`,
-        [voto == "curti" ? 1 : 0, voto == "nao_curti" ? 1 : 0, pais]
+        if(valida[0] == null){
+            await db.query(
+            `INSERT INTO paises_curtidas (paises, curtidas, n_curtidas) 
+            VALUES (?, ?, ?) `,
+            [pais, voto == "curti" ? 1 : 0, voto == "nao_curti" ? 1 : 0, pais]
         );
+        }else{
+            await db.query(
+            `UPDATE paises_curtidas 
+            SET curtidas = curtidas + ?, 
+                n_curtidas = n_curtidas + ? 
+            WHERE paises = ?`,
+            [voto == "curti" ? 1 : 0, voto == "nao_curti" ? 1 : 0, pais]
+            );
+        }
+        const [updated] = await db.query("SELECT curtidas, n_curtidas FROM paises_curtidas WHERE paises = ?", [pais]);
+
+        res.json({ sucesso: true, pais, avaliacao: updated[0] });
+
+    } catch (err) {
+        res.status(500).json({ erro: err.message });
     }
-    const [updated] = await db.query("SELECT curtidas, n_curtidas FROM paises_curtidas WHERE paises = ?", [pais]);
-
-    res.json({ sucesso: true, pais, avaliacao: updated[0] });
-
 });
 
+try{
+    app.get("/paises/avaliar", async (req, res) => {
 
-app.get("/paises/avaliar", async (req, res) => {
-
-    const [rows] = await db.query("SELECT * FROM paises_curtidas");
-    res.json(rows);
-  
-});
+        const [rows] = await db.query("SELECT * FROM paises_curtidas");
+        res.json(rows);
+    
+    });
+} catch (err) {
+    res.status(500).json({ erro: err.message });
+}
 
 app.listen(3000, () => console.log("http://localhost:3000"));
