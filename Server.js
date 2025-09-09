@@ -71,6 +71,29 @@ app.get("/paises/buscar", async (req, res) => {
   }
 });
 
+// adição nova para novos teste
+app.get("/paises/regiao", async(req, res) => {
+  try{
+    const { nome } = req.query;
+
+    const response = await fetch(`https://restcountries.com/v3.1/region/${nome}`);
+
+    const dados = await response.json();
+
+    const paises = dados.map( p => ({
+      nome: p.name.common,
+      populacao: p.population,
+      continente: p.region
+    }));
+
+    const top10 = paises.sort((a, b) => b.populacao - a.populacao).slice(0, 10);
+
+    res.json(top10);
+  }catch (err){
+    res.status(500).json({erro: err.message});
+  }
+
+})
 
 app.post("/paises/avaliar", async (req, res) => {
   const { pais, voto } = req.body;
