@@ -93,7 +93,28 @@ app.get("/paises/regiao", async(req, res) => {
     res.status(500).json({erro: err.message});
   }
 
-})
+});
+
+// Adição por linguagem
+app.get("/paises/linguagem", async(req, res) => {
+  try{
+    const { nome } = req.query;
+
+    const response = await fetch(`https://restcountries.com/v3.1/lang/${nome}`);
+
+    const dados = await response.json();
+
+    const paises = dados.map( p => ({
+      nome: p.name.common,
+      populacao: p.population,
+      continente: p.region
+    }));
+
+    res.json(paises.sort((a, b) => a.nome.localeCompare(b.nome)).slice(0,10));
+  }catch (err){
+    res.status(500).json({erro :err.message});
+  }
+});
 
 app.post("/paises/avaliar", async (req, res) => {
   const { pais, voto } = req.body;
