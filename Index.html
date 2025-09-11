@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+</head>
+<body>
+  <div>
+    <form>
+      <label>pesquisar</label>
+      <input type="text" name="CONSULTA" id="CONSULTA" value="" placeholder="lingua de origem">
+      <input type="submit" name="BT_SALVAR" id="BT_SALVAR" value="Salvar">
+    </form>
+  </div>
+  <p id="mensagem"></p>
+  <script >
+    
+    const salvar = document.getElementById("BT_SALVAR");
+    const consulta = document.getElementById("CONSULTA");
+    const id_mensagem = document.getElementById("mensagem");
+
+    salvar.addEventListener("click", function(event) {
+      event.preventDefault(); 
+      
+      const digitado = consulta.value;
+
+      id_mensagem.textContent = 'Olá, ' + digitado + '! Bem-vindo(a).';
+    });
+    
+  </script>
+</body>
+</html>
